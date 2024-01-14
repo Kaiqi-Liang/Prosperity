@@ -50,9 +50,9 @@ class Observation:
     def __str__(self) -> str:
         return (
             "(plainValueObservations: "
-            + jsonpickle.encode(self.plainValueObservations)
+            + str(jsonpickle.encode(self.plainValueObservations))
             + ", conversionObservations: "
-            + jsonpickle.encode(self.conversionObservations)
+            + str(jsonpickle.encode(self.conversionObservations))
             + ")"
         )
 
@@ -86,8 +86,8 @@ class Trade:
         symbol: Symbol,
         price: int,
         quantity: int,
-        buyer: UserId = None,
-        seller: UserId = None,
+        buyer: UserId = "",
+        seller: UserId = "",
         timestamp: int = 0,
     ) -> None:
         self.symbol = symbol
