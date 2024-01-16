@@ -36,6 +36,7 @@ class Trader:
             if (product == "AMETHYSTS"):
                 acceptable_price = 10_000
             elif (product == "ORCHIDS"):
+                continue
                 convObs = state.observations.conversionObservations["ORCHIDS"]
                 val = 14.46 * convObs.transportFees + 5.59 * convObs.exportTariff + 8.40 * convObs.importTariff + 0.03 * convObs.sunlight+ 3.82 * convObs.humidity+ 661.70
 
@@ -51,6 +52,8 @@ class Trader:
                     acceptable_price = 950
                 elif acceptable_price > 1500:
                     acceptable_price = 1500
+            elif(product == "STARFRUIT"):
+                acceptable_price = 5045
             else:
                 continue
 
@@ -82,6 +85,8 @@ class Trader:
             # Position Limits
             if (product == "ORCHIDS"):
                 position_limit = 50
+            elif (product == "STARFRUIT" or product == "AMAETHYSTS"):
+                position_limit = 20
             else:
                 position_limit = 20
 
