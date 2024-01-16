@@ -6,8 +6,6 @@ class Trader:
         Only method required. It takes all buy and sell orders for all symbols as an input,
         and outputs a list of orders to be sent
         """
-        print("state: " + str(state))
-        print("positions: " + str(state.position))
         print("traderData: " + state.traderData)
         print("Observations: " + str(state.observations))
 
@@ -35,7 +33,7 @@ class Trader:
             else:
                 acceptable_price = 5040
             # All print statements output will be delivered inside test results
-            print(f"Acceptable price : {acceptable_price}\n")
+            print("Acceptable price : " + str(acceptable_price))
             print(
                 "Buy Order depth : "
                 + str(len(order_depth.buy_orders))
