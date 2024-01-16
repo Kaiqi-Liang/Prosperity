@@ -1,4 +1,5 @@
 from datamodel import OrderDepth, Symbol, TradingState, Order
+import json
 
 class Trader:
     def run(self, state: TradingState):
@@ -6,10 +7,9 @@ class Trader:
         Only method required. It takes all buy and sell orders for all symbols as an input,
         and outputs a list of orders to be sent
         """
-        print("state: " + str(state))
-        print("positions: " + str(state.position))
-        print("traderData: " + state.traderData)
-        print("Observations: " + str(state.observations))
+        print(f"Timestamp {state.timestamp}")
+        print(f"Trader Data: {state.traderData}")
+        print(f"Observations: {json.dumps(state.observations.__dict__, indent=4, sort_keys=True)}\n")
 
         # Orders to be placed on exchange matching engine
         result: dict[Symbol, list[Order]] = {}
@@ -17,6 +17,8 @@ class Trader:
             order_depth: OrderDepth = state.order_depths[product]
             # Initialize the list of Orders to be sent as an empty list
             orders: list[Order] = []
+
+            # --------------------------------- VALUATION -------------------------------- #
             # Define a fair value for the PRODUCT. Might be different for each tradable item
             # Note that this value of 10 is just a dummy value, you should likely change it!
             if (product == "AMETHYSTS"):
@@ -33,15 +35,9 @@ class Trader:
                 elif acceptable_price > 1500:
                     acceptable_price = 1500
             else:
-                acceptable_price = 5040
-            # All print statements output will be delivered inside test results
-            print(f"Acceptable price : {acceptable_price}\n")
-            print(
-                "Buy Order depth : "
-                + str(len(order_depth.buy_orders))
-                + ", Sell order depth : "
-                + str(len(order_depth.sell_orders))
-            )
+                continue
+        
+            
 
             # Order depth list come already sorted.
             # We can simply pick first item to check first item to get best bid or offer
@@ -55,6 +51,17 @@ class Trader:
             else:
                 position = 0
 
+            # All print statements output will be delivered inside test results
+            print(f"=== PRODUCT: {product} ===")
+            print(f"  Position : {position}")
+            print(f"  Acceptable price : {acceptable_price}\n")
+            print(
+                "  Buy Order depth : "
+                + str(len(order_depth.buy_orders))
+                + ", Sell order depth : "
+                + str(len(order_depth.sell_orders))
+            )
+
             # Position Limits
             if (product == "ORCHIDS"):
                 position_limit = 100
@@ -64,14 +71,14 @@ class Trader:
             if len(order_depth.sell_orders) != 0:
                 best_ask, best_ask_amount = list(order_depth.sell_orders.items())[0]
                 if int(best_ask) <= acceptable_price - credit and position < position_limit:
-                    print("BUY", str(-best_ask_amount) + "x", best_ask)
+                    print("  BUY", str(-best_ask_amount) + "x", best_ask)
                     orders.append(Order(product, best_ask, -best_ask_amount))
             else:
                 orders.append(Order(product, acceptable_price + credit, -10))
             if len(order_depth.buy_orders) != 0:
                 best_bid, best_bid_amount = list(order_depth.buy_orders.items())[0]
                 if int(best_bid) >= acceptable_price + credit and position > -position_limit:
-                    print("SELL", str(best_bid_amount) + "x", best_bid)
+                    print("  SELL", str(best_bid_amount) + "x", best_bid)
                     orders.append(Order(product, best_bid, -best_bid_amount))
             else:
                 orders.append(Order(product, acceptable_price - credit, 10))

@@ -1,5 +1,5 @@
-from datamodel import Listing, OrderDepth, Trade, TradingState
-from trader import Trader
+from datamodel import Listing, OrderDepth, Trade, TradingState, Observation
+from round1 import Trader
 
 timestamp = 1000
 
@@ -30,7 +30,7 @@ market_trades = {
 
 position = {"STARFRUIT": 3, "AMETHYSTS": -5}
 
-observations = Observation()
+observations = Observation({}, {})
 
 state = TradingState(
     "",
