@@ -30,7 +30,7 @@ market_trades = {
 
 position = {"STARFRUIT": 3, "AMETHYSTS": -5}
 
-observations = {}
+observations = Observation()
 
 state = TradingState(
     "",

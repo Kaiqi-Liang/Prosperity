@@ -22,26 +22,26 @@ CONVERSION = {
 # Create cycles of length 2 to 5 from "SHELL" to "SHELL"
 cycles = []
 
-# # SHELL - __ - SHELL
-# for i in nodes:
-#   if i != "SHELL":
-#     cycles.append(["SHELL", i, "SHELL"])
+# SHELL - __ - SHELL
+for i in nodes:
+  if i != "SHELL":
+    cycles.append(["SHELL", i, "SHELL"])
 
-# # SHELL - __ - __ - SHELL
-# for i in nodes:
-#   if i != "SHELL":
-#     for j in nodes:
-#       if j != "SHELL":
-#         cycles.append(["SHELL", i, j, "SHELL"])
+# SHELL - __ - __ - SHELL
+for i in nodes:
+  if i != "SHELL":
+    for j in nodes:
+      if j != "SHELL":
+        cycles.append(["SHELL", i, j, "SHELL"])
 
-# # SHELL - __ - __ - __ - SHELL
-# for i in nodes:
-#   if i != "SHELL":
-#     for j in nodes:
-#       if j != "SHELL":
-#         for k in nodes:
-#           if k != "SHELL":
-#             cycles.append(["SHELL", i, j, k, "SHELL"])
+# SHELL - __ - __ - __ - SHELL
+for i in nodes:
+  if i != "SHELL":
+    for j in nodes:
+      if j != "SHELL":
+        for k in nodes:
+          if k != "SHELL":
+            cycles.append(["SHELL", i, j, k, "SHELL"])
 
 # SHELL - __ - __ - __ - __ - SHELL
 for i in nodes:
