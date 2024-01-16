@@ -128,57 +128,65 @@ class Trader:
 
             # If the cost of the gift basket is less than 6 strawberries, 4 chocolates, and 1 rose, then buy the basket and sell the individual items
             if choc_best_bid is not None and straw_best_bid is not None and roses_best_bid is not None and gb_best_ask is not None: 
-                # 
                 buying_price = gb_best_ask[PRICE]
 
                 # Calculate the selling price for filling the bids
                 choc_orders, remaining_choc_vol = self._get_orders_for_vol(state.order_depths["CHOCOLATE"], NUM_CHOC_IN_GB, "BIDS")
                 straw_orders, remaining_straw_vol = self._get_orders_for_vol(state.order_depths["STRAWBERRIES"], NUM_STRAW_IN_GB, "BIDS")
                 roses_orders, remaining_roses_vol = self._get_orders_for_vol(state.order_depths["ROSES"], NUM_ROSES_IN_GB, "BIDS")
+
                 if remaining_choc_vol > 0 or remaining_straw_vol > 0 or remaining_roses_vol > 0:
                     print("  Not enough bids to fill gift basket")
-                    return result, 
-                selling_price = sum([order[PRICE] * order[AMOUNT] for order in choc_orders]) + sum([order[PRICE] * order[AMOUNT] for order in straw_orders]) + sum([order[PRICE] * order[AMOUNT] for order in roses_orders])
-                if (
-                    buying_price < selling_price
-                    and self._get_position(state, "GIFT_BASKET") + 1 < MAX_POSITIONS["GIFT_BASKET"]
-                    and self._get_position(state, "CHOCOLATE") - NUM_CHOC_IN_GB > -MAX_POSITIONS["CHOCOLATE"]
-                    and self._get_position(state, "STRAWBERRIES") - NUM_STRAW_IN_GB > -MAX_POSITIONS["STRAWBERRIES"]
-                    and self._get_position(state, "ROSES") - NUM_ROSES_IN_GB > -MAX_POSITIONS["ROSES"]
-                ):
-                    print("  BUY", str(gb_best_ask[AMOUNT]) + "x", gb_best_ask[PRICE])
-                    print(f"  SELL {str(NUM_CHOC_IN_GB)}x {choc_best_bid[PRICE]}, SELL {str(NUM_STRAW_IN_GB)}x {straw_best_bid[PRICE]}, SELL {str(NUM_ROSES_IN_GB)}x {roses_best_bid[PRICE]}")
-                    result["GIFT_BASKET"].append(Order("GIFT_BASKET", gb_best_ask[PRICE], gb_best_ask[AMOUNT]))
-                    result["CHOCOLATE"].append(Order("CHOCOLATE", choc_best_bid[PRICE], -NUM_CHOC_IN_GB))
-                    result["STRAWBERRIES"].append(Order("STRAWBERRIES", straw_best_bid[PRICE], -NUM_STRAW_IN_GB))
-                    result["ROSES"].append(Order("ROSES", roses_best_bid[PRICE], -NUM_ROSES_IN_GB))
+
+                else: 
+                    selling_price = sum([order[PRICE] * order[AMOUNT] for order in choc_orders]) + sum([order[PRICE] * order[AMOUNT] for order in straw_orders]) + sum([order[PRICE] * order[AMOUNT] for order in roses_orders])
+                    if (
+                        buying_price < selling_price
+                        and self._get_position(state, "GIFT_BASKET") + 1 < MAX_POSITIONS["GIFT_BASKET"]
+                        and self._get_position(state, "CHOCOLATE") - NUM_CHOC_IN_GB > -MAX_POSITIONS["CHOCOLATE"]
+                        and self._get_position(state, "STRAWBERRIES") - NUM_STRAW_IN_GB > -MAX_POSITIONS["STRAWBERRIES"]
+                        and self._get_position(state, "ROSES") - NUM_ROSES_IN_GB > -MAX_POSITIONS["ROSES"]
+                    ):
+                        print("  BUY", str(gb_best_ask[AMOUNT]) + "x", gb_best_ask[PRICE])
+                        print(f"  SELL {str(NUM_CHOC_IN_GB)}x {choc_best_bid[PRICE]}, SELL {str(NUM_STRAW_IN_GB)}x {straw_best_bid[PRICE]}, SELL {str(NUM_ROSES_IN_GB)}x {roses_best_bid[PRICE]}")
+                        result["GIFT_BASKET"].append(Order("GIFT_BASKET", gb_best_ask[PRICE], gb_best_ask[AMOUNT]))
+                        result["CHOCOLATE"].append(Order("CHOCOLATE", choc_best_bid[PRICE], -NUM_CHOC_IN_GB))
+                        result["STRAWBERRIES"].append(Order("STRAWBERRIES", straw_best_bid[PRICE], -NUM_STRAW_IN_GB))
+                        result["ROSES"].append(Order("ROSES", roses_best_bid[PRICE], -NUM_ROSES_IN_GB))
+                    else:
+                        print("  No profitable buy gift basket arb found")
             
             # If the cost of the gift basket is more than 6 strawberries, 4 chocolates, and 1 rose, then sell the basket and buy the individual items
             if choc_best_ask is not None and straw_best_ask is not None and roses_best_ask is not None and gb_best_bid is not None:
+                selling_price = gb_best_bid[PRICE]
+
                 # Calculate the buying price for filling the asks
                 choc_orders, remaining_choc_vol = self._get_orders_for_vol(state.order_depths["CHOCOLATE"], NUM_CHOC_IN_GB, "ASKS")
                 straw_orders, remaining_straw_vol = self._get_orders_for_vol(state.order_depths["STRAWBERRIES"], NUM_STRAW_IN_GB, "ASKS")
                 roses_orders, remaining_roses_vol = self._get_orders_for_vol(state.order_depths["ROSES"], NUM_ROSES_IN_GB, "ASKS")
+
                 if remaining_choc_vol > 0 or remaining_straw_vol > 0 or remaining_roses_vol > 0:
                     print(f"  Not enough asks to fill gift basket. Remaining choc: {remaining_choc_vol}, straw: {remaining_straw_vol}, roses: {remaining_roses_vol}")
-                    return result,
-                buying_price = sum([order[PRICE] * order[AMOUNT] for order in choc_orders]) + sum([order[PRICE] * order[AMOUNT] for order in straw_orders]) + sum([order[PRICE] * order[AMOUNT] for order in roses_orders])
-                
-                selling_price = gb_best_bid[PRICE]
+                    
+                else:
+                    buying_price = sum([order[PRICE] * order[AMOUNT] for order in choc_orders]) + sum([order[PRICE] * order[AMOUNT] for order in straw_orders]) + sum([order[PRICE] * order[AMOUNT] for order in roses_orders])
+                    
 
-                if (
-                    buying_price < selling_price
-                    and self._get_position(state, "GIFT_BASKET") - 1 > -MAX_POSITIONS["GIFT_BASKET"]
-                    and self._get_position(state, "CHOCOLATE") + NUM_CHOC_IN_GB < MAX_POSITIONS["CHOCOLATE"]
-                    and self._get_position(state, "STRAWBERRIES") + NUM_STRAW_IN_GB < MAX_POSITIONS["STRAWBERRIES"]
-                    and self._get_position(state, "ROSES") + NUM_ROSES_IN_GB < MAX_POSITIONS["ROSES"]
-                ):
-                    print("  SELL", str(gb_best_bid[AMOUNT]) + "x", gb_best_bid[PRICE])
-                    print(F"  BUY {str(NUM_CHOC_IN_GB)}x {choc_best_ask[PRICE]}, BUY {str(NUM_STRAW_IN_GB)}x {straw_best_ask[PRICE]}, BUY {str(NUM_ROSES_IN_GB)}x {roses_best_ask[PRICE]}")
-                    result["GIFT_BASKET"].append(Order("GIFT_BASKET", gb_best_bid[PRICE], -gb_best_bid[AMOUNT]))
-                    result["CHOCOLATE"].append(Order("CHOCOLATE", choc_best_ask[PRICE], NUM_CHOC_IN_GB))
-                    result["STRAWBERRIES"].append(Order("STRAWBERRIES", straw_best_ask[PRICE], NUM_STRAW_IN_GB))
-                    result["ROSES"].append(Order("ROSES", roses_best_ask[PRICE], NUM_ROSES_IN_GB))
+                    if (
+                        buying_price < selling_price
+                        and self._get_position(state, "GIFT_BASKET") - 1 > -MAX_POSITIONS["GIFT_BASKET"]
+                        and self._get_position(state, "CHOCOLATE") + NUM_CHOC_IN_GB < MAX_POSITIONS["CHOCOLATE"]
+                        and self._get_position(state, "STRAWBERRIES") + NUM_STRAW_IN_GB < MAX_POSITIONS["STRAWBERRIES"]
+                        and self._get_position(state, "ROSES") + NUM_ROSES_IN_GB < MAX_POSITIONS["ROSES"]
+                    ):
+                        print("  SELL", str(gb_best_bid[AMOUNT]) + "x", gb_best_bid[PRICE])
+                        print(F"  BUY {str(NUM_CHOC_IN_GB)}x {choc_best_ask[PRICE]}, BUY {str(NUM_STRAW_IN_GB)}x {straw_best_ask[PRICE]}, BUY {str(NUM_ROSES_IN_GB)}x {roses_best_ask[PRICE]}")
+                        result["GIFT_BASKET"].append(Order("GIFT_BASKET", gb_best_bid[PRICE], -gb_best_bid[AMOUNT]))
+                        result["CHOCOLATE"].append(Order("CHOCOLATE", choc_best_ask[PRICE], NUM_CHOC_IN_GB))
+                        result["STRAWBERRIES"].append(Order("STRAWBERRIES", straw_best_ask[PRICE], NUM_STRAW_IN_GB))
+                        result["ROSES"].append(Order("ROSES", roses_best_ask[PRICE], NUM_ROSES_IN_GB))
+                    else:
+                        print("  No profitable sell gift basket arb found")
 
         # String value holding Trader state data required.
         # It will be delivered as TradingState.traderData on next execution.
