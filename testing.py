@@ -29,6 +29,10 @@ order_depths = {
     "STARFRUIT": OrderDepth(buy_orders={10: 7, 9: 5}, sell_orders={11: -4, 12: -8}),
     "AMETHYSTS": OrderDepth(buy_orders={142: 3, 141: 5}, sell_orders={144: -5, 145: -8}),
     "ORCHIDS": OrderDepth(buy_orders={1000: 3, 999: 5}, sell_orders={1001: -5, 1002: -8}),
+    "CHOCOLATE": OrderDepth(sell_orders={8017: 4}),
+    "STRAWBERRIES": OrderDepth(sell_orders={4018: 6}),
+    "ROSES": OrderDepth(sell_orders={14660: 2}),
+    "GIFT_BASKET": OrderDepth(buy_orders={71217: 1}),
 }
 
 own_trades = {"STARFRUIT": [], "AMETHYSTS": [], "ORCHIDS": []}

@@ -22,6 +22,9 @@ class Trader:
         # Orders to be placed on exchange matching engine
         result: dict[Symbol, list[Order]] = {}
         for product in state.order_depths:
+            result[product] = []
+
+        for product in state.order_depths:
             print(f"=== PRODUCT: {product} ===")
             order_depth: OrderDepth = state.order_depths[product]
             # Initialize the list of Orders to be sent as an empty list
@@ -157,7 +160,7 @@ class Trader:
                 straw_orders, remaining_straw_vol = self._get_orders_for_vol(state.order_depths["STRAWBERRIES"], NUM_STRAW_IN_GB, "ASKS")
                 roses_orders, remaining_roses_vol = self._get_orders_for_vol(state.order_depths["ROSES"], NUM_ROSES_IN_GB, "ASKS")
                 if remaining_choc_vol > 0 or remaining_straw_vol > 0 or remaining_roses_vol > 0:
-                    print("  Not enough asks to fill gift basket")
+                    print(f"  Not enough asks to fill gift basket. Remaining choc: {remaining_choc_vol}, straw: {remaining_straw_vol}, roses: {remaining_roses_vol}")
                     return result,
                 buying_price = sum([order[PRICE] * order[AMOUNT] for order in choc_orders]) + sum([order[PRICE] * order[AMOUNT] for order in straw_orders]) + sum([order[PRICE] * order[AMOUNT] for order in roses_orders])
                 
@@ -240,6 +243,7 @@ class Trader:
         for order in orders.items():
             if order[AMOUNT] >= vol_remaining:
                 orders_to_fill_vol.append((order[PRICE], vol_remaining))
+                vol_remaining = 0
                 break
             else:
                 orders_to_fill_vol.append(order)
