@@ -26,13 +26,13 @@ listings = {
 }
 
 order_depths = {
-    "STARFRUIT": OrderDepth(buy_orders={10: 7, 9: 5}, sell_orders={11: -4, 12: -8}),
-    "AMETHYSTS": OrderDepth(buy_orders={142: 3, 141: 5}, sell_orders={144: -5, 145: -8}),
-    "ORCHIDS": OrderDepth(buy_orders={1000: 3, 999: 5}, sell_orders={1001: -5, 1002: -8}),
-    "CHOCOLATE": OrderDepth(sell_orders={8017: 4}, buy_orders={8016: 4}),
-    "STRAWBERRIES": OrderDepth(sell_orders={4018: 6}, buy_orders={4017: 6}),
-    "ROSES": OrderDepth(sell_orders={14660: 2}, buy_orders={14659: 2}),
-    "GIFT_BASKET": OrderDepth(buy_orders={71217: 1}, sell_orders={70000: 1}),
+    # "STARFRUIT": OrderDepth(buy_orders={10: 7, 9: 5}, sell_orders={11: -4, 12: -8}),
+    # "AMETHYSTS": OrderDepth(buy_orders={142: 3, 141: 5}, sell_orders={144: -5, 145: -8}),
+    # "ORCHIDS": OrderDepth(buy_orders={1000: 3, 999: 5}, sell_orders={1001: -5, 1002: -8}),
+    "CHOCOLATE": OrderDepth( buy_orders={7750: 136}, sell_orders={7752: 136}),
+    "GIFT_BASKET": OrderDepth(buy_orders={69548: 2}, sell_orders={69559: 1}),
+    "ROSES": OrderDepth(buy_orders={14415:53}, sell_orders={14416: 53}),
+    "STRAWBERRIES": OrderDepth(buy_orders={3984: 272}, sell_orders={3986: 272}),
 }
 
 own_trades = {"STARFRUIT": [], "AMETHYSTS": [], "ORCHIDS": []}
