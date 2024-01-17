@@ -1,5 +1,13 @@
 # wARNING: this code is so sloppy and lazily written - I'll hopefully abstract stuff into helper functions and clean it up before final submission TT
 
+# TODO 18 Jan
+"""
+- [ ] Trade with more than just best bid and offer for AMETHYSTS
+- [ ] Split trading for each product into their own functions
+- [ ] Quote AMETHYSTS
+- [ ] Try to persist midmarket price for STARFRUIT
+"""
+
 PRICE = 0
 AMOUNT = 1
 
@@ -53,7 +61,7 @@ class Trader:
                 elif acceptable_price > 1500:
                     acceptable_price = 1500
             elif(product == "STARFRUIT"):
-                acceptable_price = 5045
+                acceptable_price = None
             else:
                 continue
 
@@ -110,6 +118,8 @@ class Trader:
                 orders.append(Order(product, acceptable_price - credit, 10))
 
             result[product] = orders
+
+
 
         # ------------------------------ GIFT BASKET ARB ----------------------------- #
         # Hitting-only strategy for gift basket arbitrage
@@ -185,20 +195,22 @@ class Trader:
                         and self._get_position(state, "ROSES") + NUM_ROSES_IN_GB < MAX_POSITIONS["ROSES"]
                     ):
                         print("  SELL", str(gb_best_bid[AMOUNT]) + "x", gb_best_bid[PRICE])
-                        print(F"  BUY {str(NUM_CHOC_IN_GB)}x {choc_best_ask[PRICE]}, BUY {str(NUM_STRAW_IN_GB)}x {straw_best_ask[PRICE]}, BUY {str(NUM_ROSES_IN_GB)}x {roses_best_ask[PRICE]}")
+                        print(f"  BUY {str(NUM_CHOC_IN_GB)}x {choc_best_ask[PRICE]}, BUY {str(NUM_STRAW_IN_GB)}x {straw_best_ask[PRICE]}, BUY {str(NUM_ROSES_IN_GB)}x {roses_best_ask[PRICE]}")
                         result["GIFT_BASKET"].append(Order("GIFT_BASKET", gb_best_bid[PRICE], -gb_best_bid[AMOUNT]))
                         result["CHOCOLATE"].append(Order("CHOCOLATE", choc_best_ask[PRICE], NUM_CHOC_IN_GB))
                         result["STRAWBERRIES"].append(Order("STRAWBERRIES", straw_best_ask[PRICE], NUM_STRAW_IN_GB))
                         result["ROSES"].append(Order("ROSES", roses_best_ask[PRICE], NUM_ROSES_IN_GB))
                     else:
                         print("  No profitable sell gift basket arb found")
-
+        else:
+            raise Exception(f'Gift basket arb not possible, {(set(["CHOCOLATE", "STRAWBERRIES", "ROSES", "GIFT_BASKET"]).difference(set(state.order_depths.keys())))} is missing from order depths')
+        
         # String value holding Trader state data required.
         # It will be delivered as TradingState.traderData on next execution.
         traderData = "SAMPLE"
 
         # Sample conversion request. Check more details below.
-        conversions = 1
+        conversions = 100
         return result, conversions, traderData
     
     def _get_conversion_obs_string(self, obs: ConversionObservation):
