@@ -17,7 +17,6 @@ class Trader:
         print(f"Timestamp: {state.timestamp}")
         print(f"Trader Data: {state.traderData}")
         print(f"Observation: {state.observations}")
-        print(f"Listings: {[f'{listing}' for listing in state.listings.values()]}")
 
         # Orders to be placed on exchange matching engine
         result: dict[Symbol, list[Order]] = {}
@@ -36,7 +35,7 @@ class Trader:
             if (product == "AMETHYSTS"):
                 acceptable_price = 10_000
             elif (product == "ORCHIDS"):
-                continue
+                # continue
                 convObs = state.observations.conversionObservations["ORCHIDS"]
                 val = 14.46 * convObs.transportFees + 5.59 * convObs.exportTariff + 8.40 * convObs.importTariff + 0.03 * convObs.sunlight+ 3.82 * convObs.humidity+ 661.70
 
@@ -85,7 +84,7 @@ class Trader:
             # Position Limits
             if (product == "ORCHIDS"):
                 position_limit = 50
-            elif (product == "STARFRUIT" or product == "AMAETHYSTS"):
+            elif (product == "STARFRUIT" or product == "AMETHYSTS"):
                 position_limit = 20
             else:
                 position_limit = 20
