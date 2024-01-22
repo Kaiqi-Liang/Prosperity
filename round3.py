@@ -1,4 +1,3 @@
-# wARNING: this code is so sloppy and lazily written - I'll hopefully abstract stuff into helper functions and clean it up before final submission TT
 
 PRICE = 0
 AMOUNT = 1
@@ -23,6 +22,11 @@ class Trader:
         result: dict[Symbol, list[Order]] = {}
         for product in state.order_depths:
             result[product] = []
+
+        if not isinstance(state.traderData, list) or not state.traderData or state.traderData is None:
+            traderData = []
+        else:
+            traderData = state.traderData
 
         for product in state.order_depths:
             print(f"=== PRODUCT: {product} ===")
@@ -53,13 +57,16 @@ class Trader:
                 elif acceptable_price > 1500:
                     acceptable_price = 1500
             elif(product == "STARFRUIT"):
-                acceptable_price = 5045
+                # acceptable_price = 5045
+                acceptable_price = None
+                best_bid, best_ask = list(order_depth.buy_orders.items())[-1], list(order_depth.sell_orders.items())[0]
+                traderData.append((state.timestamp, best_bid[0], best_ask[0]))
             else:
                 continue
 
             # Order depth list come already sorted.
             # We can simply pick first item to check first item to get best bid or offer
-            if (product == "ORCHIDS"):
+            if (product == "STARFRUIT"):
                 credit = 5
             else:
                 credit = 2
@@ -89,25 +96,25 @@ class Trader:
                 position_limit = 20
             else:
                 position_limit = 20
-
-            if len(order_depth.sell_orders) != 0:
-                best_ask, best_ask_amount = list(order_depth.sell_orders.items())[0]
-                if int(best_ask) <= acceptable_price - credit and position < position_limit:
-                    print("  BUY", str(-best_ask_amount) + "x", best_ask)
-                    orders.append(Order(product, best_ask, -best_ask_amount))
+            if acceptable_price is not None:
+                if len(order_depth.sell_orders) != 0:
+                    best_ask, best_ask_amount = list(order_depth.sell_orders.items())[0]
+                    if int(best_ask) <= acceptable_price - credit and position < position_limit:
+                        print("  BUY", str(-best_ask_amount) + "x", best_ask)
+                        orders.append(Order(product, best_ask, -best_ask_amount))
+                    else:
+                        orders.append(Order(product, acceptable_price + credit, -10))
                 else:
                     orders.append(Order(product, acceptable_price + credit, -10))
-            else:
-                orders.append(Order(product, acceptable_price + credit, -10))
-            if len(order_depth.buy_orders) != 0:
-                best_bid, best_bid_amount = list(order_depth.buy_orders.items())[-1]
-                if int(best_bid) >= acceptable_price + credit and position > -position_limit:
-                    print("  SELL", str(best_bid_amount) + "x", best_bid)
-                    orders.append(Order(product, best_bid, -best_bid_amount))
+                if len(order_depth.buy_orders) != 0:
+                    best_bid, best_bid_amount = list(order_depth.buy_orders.items())[-1]
+                    if int(best_bid) >= acceptable_price + credit and position > -position_limit:
+                        print("  SELL", str(best_bid_amount) + "x", best_bid)
+                        orders.append(Order(product, best_bid, -best_bid_amount))
+                    else:
+                        orders.append(Order(product, acceptable_price - credit, 10))
                 else:
                     orders.append(Order(product, acceptable_price - credit, 10))
-            else:
-                orders.append(Order(product, acceptable_price - credit, 10))
 
             result[product] = orders
 
@@ -192,10 +199,6 @@ class Trader:
                         result["ROSES"].append(Order("ROSES", roses_best_ask[PRICE], NUM_ROSES_IN_GB))
                     else:
                         print("  No profitable sell gift basket arb found")
-
-        # String value holding Trader state data required.
-        # It will be delivered as TradingState.traderData on next execution.
-        traderData = "SAMPLE"
 
         # Sample conversion request. Check more details below.
         conversions = 1

@@ -1,0 +1,35 @@
+Timestamp: 1000
+Trader Data: 
+Observation: (plainValueObservations: {}, conversionObservations: {"ORCHIDS": {"py/object": "datamodel.ConversionObservation", "bidPrice": 1000, "askPrice": 1000, "transportFees": 0, "exportTariff": 0, "importTariff": 0, "sunlight": 0, "humidity": 0}})
+Listings: ['<datamodel.Listing object at 0x000001B3B90C1690>', '<datamodel.Listing object at 0x000001B3B90C1650>', '<datamodel.Listing object at 0x000001B3B90C1710>', '<datamodel.Listing object at 0x000001B3B90C2810>', '<datamodel.Listing object at 0x000001B3B90C16D0>', '<datamodel.Listing object at 0x000001B3B9D4A610>', '<datamodel.Listing object at 0x000001B3B9D4A650>']
+=== PRODUCT: STARFRUIT ===
+  Midmarket: 10
+  Position : 3
+  Acceptable price : None
+  Bids: [(10, 7), (9, 5)]
+  Asks: [(11, -4), (12, -8)]
+
+  BestBid, BestAsk = ((10, 7), (11, -4))
+  Market Trades: [(STARFRUIT,  << , 11, 4, 900)]
+  Own Trades: []
+
+=== PRODUCT: AMETHYSTS ===
+  Midmarket: 5071
+  Position : -5
+  Acceptable price : 10000
+  Bids: [(142, 3), (141, 5)]
+  Asks: [(10002, -5), (10000, -8)]
+
+  BestBid, BestAsk = ((142, 3), (10000, -8))
+  Market Trades: []
+  Own Trades: []
+
+=== PRODUCT: ORCHIDS ===
+=== PRODUCT: CHOCOLATE ===
+=== PRODUCT: GIFT_BASKET ===
+=== PRODUCT: ROSES ===
+=== PRODUCT: STRAWBERRIES ===
+  No profitable buy gift basket arb found
+  SELL 2x 69548
+  BUY 4x 7752, BUY 6x 3986, BUY 1x 14416
+({'STARFRUIT': [], 'AMETHYSTS': [(AMETHYSTS, 10002, -10), (AMETHYSTS, 9998, 10)], 'ORCHIDS': [], 'CHOCOLATE': [(CHOCOLATE, 7752, 4)], 'GIFT_BASKET': [(GIFT_BASKET, 69548, -2)], 'ROSES': [(ROSES, 14416, 1)], 'STRAWBERRIES': [(STRAWBERRIES, 3986, 6)]}, 1, [(1000, 9, 11)])

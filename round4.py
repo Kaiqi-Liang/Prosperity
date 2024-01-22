@@ -1,14 +1,36 @@
 # wARNING: this code is so sloppy and lazily written - I'll hopefully abstract stuff into helper functions and clean it up before final submission TT
 
+# TODO 18 Jan
+"""
+- [ ] Trade with more than just best bid and offer for AMETHYSTS
+- [ ] Split trading for each product into their own functions
+- [ ] Quote AMETHYSTS
+- [ ] Try to persist midmarket price for STARFRUIT
+- [ ] Implement Market Making quotes and position management for other products
+"""
+
 PRICE = 0
 AMOUNT = 1
+
+MAX_POSITIONS = {
+    "AMETHYSTS": 20,
+    "STARFRUIT": 20,
+    "ORCHIDS": 100,
+    "CHOCOLATE": 250,
+    "STRAWBERRIES": 350,
+    "ROSES": 60,
+    "GIFT_BASKET": 60,
+    "COCONUT": 300,
+    "COCONUT_COUPON": 600
+}
+
+NUM_CHOC_IN_GB = 4
+NUM_STRAW_IN_GB = 6
+NUM_ROSES_IN_GB = 1
 
 from datamodel import ConversionObservation, OrderDepth, Symbol, TradingState, Order
 
 class Trader:
-    
-    # def trade_orchids(self, )
-
     def run(self, state: TradingState):
         """
         Only method required. It takes all buy and sell orders for all symbols as an input,
@@ -16,114 +38,85 @@ class Trader:
         """
         print(f"Timestamp: {state.timestamp}")
         print(f"Trader Data: {state.traderData}")
-        print(f"Observation: {state.observations}")
+        # print(f"Observation: {state.observations}")
 
-        # Orders to be placed on exchange matching engine
-        result: dict[Symbol, list[Order]] = {}
-        for product in state.order_depths:
-            result[product] = []
+        result = {
+            "AMETHYSTS": [],
+            "STARFRUIT": [],
+            "ORCHIDS": [],
+            "CHOCOLATE": [],
+            "STRAWBERRIES": [],
+            "ROSES": [],
+            "GIFT_BASKET": [],
+            "COCONUT": [],
+            "COCONUT_COUPON": []
+        }
 
-        for product in state.order_depths:
-            print(f"=== PRODUCT: {product} ===")
-            order_depth: OrderDepth = state.order_depths[product]
-            # Initialize the list of Orders to be sent as an empty list
-            orders: list[Order] = []
+        # ------------------------------ AMETHYSTS -------------------------------- #
+        if "AMETHYSTS" in state.order_depths.keys():
+            product = "AMETHYSTS"
+            orders = []
+            acceptable_price = 10_000
+            order_depth: OrderDepth = state.order_depths["AMETHYSTS"]
+            credit = 2
+            position = state.position["AMETHYSTS"]
+            position_limit = MAX_POSITIONS["AMETHYSTS"]
+            best_bid, best_ask = self._get_best_bid_ask(order_depth)
 
-            # --------------------------------- VALUATION -------------------------------- #
-            # Define a fair value for the PRODUCT. Might be different for each tradable item
-            # Note that this value of 10 is just a dummy value, you should likely change it!
-            if (product == "AMETHYSTS"):
-                acceptable_price = 10_000
-            elif (product == "ORCHIDS"):
-                # continue
-                convObs = state.observations.conversionObservations["ORCHIDS"]
-                val = 14.46 * convObs.transportFees + 5.59 * convObs.exportTariff + 8.40 * convObs.importTariff + 0.03 * convObs.sunlight+ 3.82 * convObs.humidity+ 661.70
-
-                print(f"  Orchid Valuation: {val}")
-
-                # midmarket = (convObs.bidPrice + convObs.askPrice)/2
-                best_bid, best_ask = list(order_depth.buy_orders.items())[-1], list(order_depth.sell_orders.items())[0]
-                midmarket = int((best_bid[0] + best_ask[0])/2)
-                acceptable_price = int(val + 0.5*(midmarket - val))
-
-                # Clamp the acceptable price to be between 950 to 1500
-                if acceptable_price < 950:
-                    acceptable_price = 950
-                elif acceptable_price > 1500:
-                    acceptable_price = 1500
-            elif(product == "STARFRUIT"):
-                acceptable_price = 5045
+            if len(order_depth.sell_orders) == 0:
+                orders.append(Order(product, acceptable_price + credit + 1, -position_limit))
             else:
-                continue
-
-            # Order depth list come already sorted.
-            # We can simply pick first item to check first item to get best bid or offer
-            if (product == "ORCHIDS"):
-                credit = 5
+                asks_below_price = self._get_asks_below_price(order_depth, acceptable_price + credit)
+                for (price, amount) in asks_below_price:
+                    print("  [AMETHYSTS] BUY", str(amount) + "x", price)
+                    orders.append(Order(product, price, -amount))
+                    
+            if len(order_depth.buy_orders) == 0:
+                orders.append(Order(product, acceptable_price - credit - 1, position_limit))
             else:
-                credit = 2
+                bids_above_price = self._get_bids_above_price(order_depth, acceptable_price - credit)
+                for (price, amount) in bids_above_price:
+                    print("  [AMETHYSTS] SELL", str(amount) + "x", price)
+                    orders.append(Order(product, price, -amount))
+
+            result["AMETHYSTS"] = orders
+
+        # ------------------------------ STARFRUIT -------------------------------- #
+        if "STARFRUIT" in state.order_depths.keys():
+            product = "STARFRUIT"
+            orders = []
+            acceptable_price = 5018
+            credit = 7
+            position = state.position["STARFRUIT"]
+            position_limit = MAX_POSITIONS["STARFRUIT"]
+
+            order_depth: OrderDepth = state.order_depths["STARFRUIT"]
+
+            if len(order_depth.sell_orders) == 0:
+                orders.append(Order(product, acceptable_price + credit + 1, -position_limit))
+            else:
+                asks_below_price = self._get_asks_below_price(order_depth, acceptable_price + credit)
+                for (price, amount) in asks_below_price:
+                    print("  [STARFRUIT] BUY", str(amount) + "x", price)
+                    orders.append(Order(product, price, -amount))
             
-            if product in state.position.keys():
-                position = state.position[product]
+            if len(order_depth.buy_orders) == 0:
+                orders.append(Order(product, acceptable_price - credit - 1, position_limit))
             else:
-                position = 0
+                bids_above_price = self._get_bids_above_price(order_depth, acceptable_price - credit)
+                for (price, amount) in bids_above_price:
+                    print("  [STARFRUIT] SELL", str(amount) + "x", price)
+                    orders.append(Order(product, price, -amount))
 
-            best_bid, best_ask = list(order_depth.buy_orders.items())[-1], list(order_depth.sell_orders.items())[0]
-            midmarket = int((best_bid[0] + best_ask[0])/2)
+            result["STARFRUIT"] = orders
 
-            # All print statements output will be delivered inside test results
-            print(f"  Midmarket: {midmarket}")
-            print(f"  Position : {position}")
-            print(f"  Acceptable price : {acceptable_price}")
-            print(f"  Bids: {list(order_depth.buy_orders.items())}")
-            print(f"  Asks: {list(order_depth.sell_orders.items())}\n")
-            print(f"  BestBid, BestAsk = {self._get_best_bid_ask(order_depth)}")
-            print(f"  Market Trades: {state.market_trades[product] if product in state.market_trades.keys() else []}")
-            print(f"  Own Trades: {state.own_trades[product] if product in state.own_trades.keys() else []}\n")
-
-            # Position Limits
-            if (product == "ORCHIDS"):
-                position_limit = 50
-            elif (product == "STARFRUIT" or product == "AMETHYSTS"):
-                position_limit = 20
-            else:
-                position_limit = 20
-
-            if len(order_depth.sell_orders) != 0:
-                best_ask, best_ask_amount = list(order_depth.sell_orders.items())[0]
-                if int(best_ask) <= acceptable_price - credit and position < position_limit:
-                    print("  BUY", str(-best_ask_amount) + "x", best_ask)
-                    orders.append(Order(product, best_ask, -best_ask_amount))
-                else:
-                    orders.append(Order(product, acceptable_price + credit, -10))
-            else:
-                orders.append(Order(product, acceptable_price + credit, -10))
-            if len(order_depth.buy_orders) != 0:
-                best_bid, best_bid_amount = list(order_depth.buy_orders.items())[-1]
-                if int(best_bid) >= acceptable_price + credit and position > -position_limit:
-                    print("  SELL", str(best_bid_amount) + "x", best_bid)
-                    orders.append(Order(product, best_bid, -best_bid_amount))
-                else:
-                    orders.append(Order(product, acceptable_price - credit, 10))
-            else:
-                orders.append(Order(product, acceptable_price - credit, 10))
-
-            result[product] = orders
+        # ---------------------------------- ORCHIDS --------------------------------- #
+        if "ORCHIDS" in state.order_depths.keys():
+            pass
 
         # ------------------------------ GIFT BASKET ARB ----------------------------- #
         # Hitting-only strategy for gift basket arbitrage
         if set(["CHOCOLATE", "STRAWBERRIES", "ROSES", "GIFT_BASKET"]).issubset(set(state.order_depths.keys())):
-            MAX_POSITIONS = {
-                "CHOCOLATE": 250,
-                "STRAWBERRIES": 350,
-                "ROSES": 60,
-                "GIFT_BASKET": 60,
-            }
-
-            NUM_CHOC_IN_GB = 4
-            NUM_STRAW_IN_GB = 6
-            NUM_ROSES_IN_GB = 1
-
             # Get the best bid and ask for each product
             choc_best_bid, choc_best_ask = self._get_best_bid_ask(state.order_depths["CHOCOLATE"])
             straw_best_bid, straw_best_ask = self._get_best_bid_ask(state.order_depths["STRAWBERRIES"])
@@ -151,15 +144,16 @@ class Trader:
                         and self._get_position(state, "STRAWBERRIES") - NUM_STRAW_IN_GB > -MAX_POSITIONS["STRAWBERRIES"]
                         and self._get_position(state, "ROSES") - NUM_ROSES_IN_GB > -MAX_POSITIONS["ROSES"]
                     ):
-                        print("  BUY", str(gb_best_ask[AMOUNT]) + "x", gb_best_ask[PRICE])
-                        print(f"  SELL {str(NUM_CHOC_IN_GB)}x {choc_best_bid[PRICE]}, SELL {str(NUM_STRAW_IN_GB)}x {straw_best_bid[PRICE]}, SELL {str(NUM_ROSES_IN_GB)}x {roses_best_bid[PRICE]}")
+                        # raise ValueError("buying_price < selling_price")
+                        print("  [GB] BUY", str(gb_best_ask[AMOUNT]) + "x", gb_best_ask[PRICE])
+                        print(f"  [CHOC] SELL {str(NUM_CHOC_IN_GB)}x {choc_best_bid[PRICE]}, [STRAW] SELL {str(NUM_STRAW_IN_GB)}x {straw_best_bid[PRICE]}, [ROSES] SELL {str(NUM_ROSES_IN_GB)}x {roses_best_bid[PRICE]}")
                         result["GIFT_BASKET"].append(Order("GIFT_BASKET", gb_best_ask[PRICE], gb_best_ask[AMOUNT]))
                         result["CHOCOLATE"].append(Order("CHOCOLATE", choc_best_bid[PRICE], -NUM_CHOC_IN_GB))
                         result["STRAWBERRIES"].append(Order("STRAWBERRIES", straw_best_bid[PRICE], -NUM_STRAW_IN_GB))
                         result["ROSES"].append(Order("ROSES", roses_best_bid[PRICE], -NUM_ROSES_IN_GB))
                     else:
                         print("  No profitable buy gift basket arb found")
-            
+
             # If the cost of the gift basket is more than 6 strawberries, 4 chocolates, and 1 rose, then sell the basket and buy the individual items
             if choc_best_ask is not None and straw_best_ask is not None and roses_best_ask is not None and gb_best_bid is not None:
                 selling_price = gb_best_bid[PRICE]
@@ -183,18 +177,25 @@ class Trader:
                         and self._get_position(state, "STRAWBERRIES") + NUM_STRAW_IN_GB < MAX_POSITIONS["STRAWBERRIES"]
                         and self._get_position(state, "ROSES") + NUM_ROSES_IN_GB < MAX_POSITIONS["ROSES"]
                     ):
-                        print("  SELL", str(gb_best_bid[AMOUNT]) + "x", gb_best_bid[PRICE])
-                        print(F"  BUY {str(NUM_CHOC_IN_GB)}x {choc_best_ask[PRICE]}, BUY {str(NUM_STRAW_IN_GB)}x {straw_best_ask[PRICE]}, BUY {str(NUM_ROSES_IN_GB)}x {roses_best_ask[PRICE]}")
+                        # Add orders to the result
+                        print("  [GB] SELL", str(gb_best_bid[AMOUNT]) + "x", gb_best_bid[PRICE])
+                        print(f"  [CHOC] BUY {str(NUM_CHOC_IN_GB)}x {choc_best_ask[PRICE]}, [STRAW] BUY {str(NUM_STRAW_IN_GB)}x {straw_best_ask[PRICE]}, [ROSES] BUY {str(NUM_ROSES_IN_GB)}x {roses_best_ask[PRICE]}")
                         result["GIFT_BASKET"].append(Order("GIFT_BASKET", gb_best_bid[PRICE], -gb_best_bid[AMOUNT]))
                         result["CHOCOLATE"].append(Order("CHOCOLATE", choc_best_ask[PRICE], NUM_CHOC_IN_GB))
                         result["STRAWBERRIES"].append(Order("STRAWBERRIES", straw_best_ask[PRICE], NUM_STRAW_IN_GB))
                         result["ROSES"].append(Order("ROSES", roses_best_ask[PRICE], NUM_ROSES_IN_GB))
+
+                        # Remove the orders from the order depths
+                        # for p in ["GIFT_BASKET", "CHOCOLATE", "STRAWBERRIES", "ROSES"]:
+                        #     for order in result[p]:
+                        #         del state.order_depths[p][]
                     else:
                         print("  No profitable sell gift basket arb found")
 
+
         # String value holding Trader state data required.
         # It will be delivered as TradingState.traderData on next execution.
-        traderData = "SAMPLE"
+        traderData = ""
 
         # Sample conversion request. Check more details below.
         conversions = 1
@@ -261,3 +262,20 @@ class Trader:
                 orders_to_fill_vol.append(order)
                 vol_remaining -= order[AMOUNT]
         return orders_to_fill_vol, vol_remaining
+    def _print_market_data(self, state: TradingState, product: Symbol, acceptable_price: int):
+        """
+        Prints out useful market data for debugging
+        """
+        order_depth: OrderDepth = state.order_depths[product]
+        position = state.position[product] if product in state.position.keys() else 0
+        best_bid, best_ask = list(order_depth.buy_orders.items())[-1], list(order_depth.sell_orders.items())[0]
+        midmarket = int((best_bid[0] + best_ask[0])/2)
+
+        print(f"  Midmarket: {midmarket}")
+        print(f"  Position : {position}")
+        print(f"  Acceptable price : {acceptable_price}")
+        print(f"  Bids: {list(order_depth.buy_orders.items())}")
+        print(f"  Asks: {list(order_depth.sell_orders.items())}\n")
+        print(f"  BestBid, BestAsk = {self._get_best_bid_ask(order_depth)}")
+        print(f"  Market Trades: {state.market_trades[product] if product in state.market_trades.keys() else []}")
+        print(f"  Own Trades: {state.own_trades[product] if product in state.own_trades.keys() else []}\n")
